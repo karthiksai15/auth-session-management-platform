@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"auth-system/backend/config"
+	"auth-system/backend/handlers"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -30,6 +31,12 @@ func main() {
 			"status": "ok",
 		})
 	})
+
+	// Auth routes — public (no authentication required)
+	auth := r.Group("/auth")
+	{
+		auth.POST("/register", handlers.Register)
+	}
 
 	// Start the server on port 8080
 	fmt.Println("Server running on port 8080")

@@ -44,3 +44,34 @@ func Register(c *gin.Context) {
 		},
 	})
 }
+
+// LoginRequest defines the expected JSON body for POST /auth/login
+type LoginRequest struct {
+	Email    string `json:"email"    binding:"required,email"`
+	Password string `json:"password" binding:"required"`
+}
+
+// Login handles POST /auth/login
+// It checks the email and password, then returns an access token and a refresh token.
+func Login(c *gin.Context) {
+	var req LoginRequest
+
+	// Bind and validate the request body
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Call the auth service — it checks credentials and generates tokens
+	accessToken, refreshToken, err := services.LoginUser(req.Email, req.Password)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return both tokens to the client
+	c.JSON(http.StatusOK, gin.H{
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+	})
+}

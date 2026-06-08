@@ -36,6 +36,7 @@ func main() {
 	auth := r.Group("/auth")
 	{
 		auth.POST("/register", handlers.Register)
+		auth.POST("/login", handlers.Login)
 	}
 
 	// Start the server on port 8080

@@ -3,6 +3,7 @@ package services
 import (
 	"auth-system/backend/models"
 	"auth-system/backend/repository"
+	"auth-system/backend/utils"
 	"errors"
 
 	"golang.org/x/crypto/bcrypt"
@@ -42,4 +43,37 @@ func RegisterUser(name, email, password string) (*models.User, error) {
 	}
 
 	return user, nil
+}
+
+// LoginUser finds the user by email, checks the password, and returns JWT tokens.
+func LoginUser(email, password string) (string, string, error) {
+	// Step 1: Find the user by email
+	user, err := repository.FindByEmail(email)
+	if err != nil {
+		return "", "", err
+	}
+	if user == nil {
+		// Use a generic message — don't reveal whether email or password was wrong
+		return "", "", errors.New("invalid email or password")
+	}
+
+	// Step 2: Compare the provided password with the stored bcrypt hash
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		return "", "", errors.New("invalid email or password")
+	}
+
+	// Step 3: Generate a short-lived access token (15 min) with userId and role
+	accessToken, err := utils.GenerateAccessToken(user.ID, user.Role)
+	if err != nil {
+		return "", "", err
+	}
+
+	// Step 4: Generate a long-lived refresh token (7 days)
+	refreshToken, err := utils.GenerateRefreshToken(user.ID)
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessToken, refreshToken, nil
 }

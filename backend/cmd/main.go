@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"auth-system/backend/config"
@@ -15,11 +14,8 @@ import (
 )
 
 func main() {
-	// Load environment variables from .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	// Load environment variables from .env file if it exists (ignore error if not, as Docker provides them)
+	_ = godotenv.Load()
 
 	// Connect to PostgreSQL
 	config.ConnectDB()

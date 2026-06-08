@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8080';
+const API_URL = '/api';
 
 // Wrapper for fetch that handles Authorization and token refresh automatically
 async function apiFetch(endpoint, options = {}) {

@@ -2,12 +2,25 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
+	"auth-system/backend/config"
+
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Load environment variables from .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	// Connect to PostgreSQL
+	config.ConnectDB()
+
 	// Create a new Gin router with default middleware (logger + recovery)
 	r := gin.Default()
 

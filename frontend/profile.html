@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth System - Profile</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>My Profile</h1>
+        <div id="errorMsg" class="error-message"></div>
+        <div id="successMsg" class="success-message"></div>
+        
+        <form id="profileForm">
+            <div class="form-group">
+                <label>Email (Read-only)</label>
+                <input type="email" id="email" disabled style="background-color: #f1f1f1; cursor: not-allowed;">
+            </div>
+            <div class="form-group">
+                <label>Role (Read-only)</label>
+                <input type="text" id="role" disabled style="background-color: #f1f1f1; cursor: not-allowed;">
+            </div>
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" required>
+            </div>
+            <button type="submit">Update Profile</button>
+            <button type="button" onclick="window.location.href='dashboard.html'" class="secondary-btn">Back to Dashboard</button>
+        </form>
+    </div>
+    <!-- Logic added in Phase 12 -->
+</body>
+</html>

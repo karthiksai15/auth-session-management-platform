@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth System - Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="dashboard-container container">
+        <div class="header">
+            <div>
+                <h1 style="margin-bottom: 0.5rem;">Dashboard</h1>
+                <span id="roleBadge" class="role-badge role-USER">Loading...</span>
+            </div>
+            <div>
+                <button id="logoutBtn" class="btn-small secondary-btn">Logout</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Welcome, <span id="userName">User</span>!</h2>
+            <p>This is your protected dashboard. Only authenticated users can see this page.</p>
+            <div style="margin-top: 1rem;">
+                <button onclick="window.location.href='profile.html'" class="btn-small">Edit Profile</button>
+            </div>
+        </div>
+
+        <div id="adminSection" class="card" style="display: none;">
+            <h2 style="color: #e74c3c;">Admin Controls</h2>
+            <p>You have ADMIN privileges. You can view all registered users.</p>
+            <button id="viewUsersBtn" class="btn-small">View All Users</button>
+            
+            <div id="usersList" style="margin-top: 1rem; text-align: left;"></div>
+        </div>
+    </div>
+    <!-- Logic added in Phase 12 -->
+</body>
+</html>

@@ -1,0 +1,14 @@
+# Go binaries
+*.exe
+*.out
+/backend/bin/
+
+# Environment files
+.env
+.env.local
+
+# Go module cache
+vendor/
+
+# OS files
+.DS_Store

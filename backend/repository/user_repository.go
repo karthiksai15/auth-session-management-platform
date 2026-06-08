@@ -41,3 +41,56 @@ func FindByEmail(email string) (*models.User, error) {
 
 	return user, nil
 }
+
+// FindUserByID looks up a user by their ID.
+// Used when refreshing a token — we need the current role from the DB.
+func FindUserByID(id int) (*models.User, error) {
+	user := &models.User{}
+
+	query := `
+		SELECT id, name, email, password, role, created_at, updated_at
+		FROM users
+		WHERE id = $1
+	`
+	err := config.DB.QueryRow(query, id).
+		Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+// GetAllUsers returns all users from the database.
+// Used only by the admin endpoint — normal users cannot call this.
+func GetAllUsers() ([]models.User, error) {
+	query := `
+		SELECT id, name, email, role, created_at, updated_at
+		FROM users
+		ORDER BY id ASC
+	`
+
+	rows, err := config.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Start with an empty slice — not nil — so JSON returns [] instead of null
+	users := []models.User{}
+
+	for rows.Next() {
+		var user models.User
+		err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
+}

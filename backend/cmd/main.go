@@ -41,6 +41,7 @@ func main() {
 	{
 		auth.POST("/register", handlers.Register)
 		auth.POST("/login", handlers.Login)
+		auth.POST("/refresh", handlers.Refresh)
 	}
 
 	// User routes — protected (valid JWT required)
@@ -64,6 +65,14 @@ func main() {
 				"message": "Auth working — full update coming in Phase 10",
 			})
 		})
+	}
+
+	// Admin routes — require valid JWT AND role must be ADMIN
+	admin := r.Group("/admin")
+	admin.Use(middleware.AuthMiddleware())
+	admin.Use(middleware.RoleMiddleware("ADMIN"))
+	{
+		admin.GET("/users", handlers.GetAllUsers)
 	}
 
 	// Start the server on port 8080

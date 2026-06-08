@@ -90,3 +90,40 @@ func LoginUser(email, password string) (string, string, error) {
 
 	return accessToken, refreshToken, nil
 }
+
+// RefreshToken validates the refresh token, checks Redis, and returns a new access token.
+func RefreshToken(refreshToken string) (string, error) {
+	// Step 1: Validate the refresh token — check signature and expiry
+	claims, err := utils.ValidateToken(refreshToken)
+	if err != nil {
+		return "", errors.New("invalid or expired refresh token")
+	}
+
+	// Step 2: Check if the refresh token still exists in Redis
+	// If the user logged out, it would have been deleted from Redis
+	redisKey := fmt.Sprintf("refresh_token:%d", claims.UserID)
+	storedToken, err := config.RedisClient.Get(context.Background(), redisKey).Result()
+	if err != nil {
+		return "", errors.New("session expired — please login again")
+	}
+
+	// Step 3: Make sure the token provided matches what's stored in Redis
+	if storedToken != refreshToken {
+		return "", errors.New("refresh token mismatch")
+	}
+
+	// Step 4: Fetch the user from the DB to get their current role
+	// (Role could have changed since the refresh token was issued)
+	user, err := repository.FindUserByID(claims.UserID)
+	if err != nil || user == nil {
+		return "", errors.New("user not found")
+	}
+
+	// Step 5: Issue a new access token with the user's current role
+	newAccessToken, err := utils.GenerateAccessToken(user.ID, user.Role)
+	if err != nil {
+		return "", err
+	}
+
+	return newAccessToken, nil
+}

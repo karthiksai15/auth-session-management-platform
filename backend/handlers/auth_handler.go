@@ -75,3 +75,29 @@ func Login(c *gin.Context) {
 		"refresh_token": refreshToken,
 	})
 }
+
+// RefreshRequest defines the expected JSON body for POST /auth/refresh
+type RefreshRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+
+// Refresh handles POST /auth/refresh
+// Takes a refresh token, validates it, checks Redis, and returns a new access token.
+func Refresh(c *gin.Context) {
+	var req RefreshRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	newAccessToken, err := services.RefreshToken(req.RefreshToken)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"access_token": newAccessToken,
+	})
+}

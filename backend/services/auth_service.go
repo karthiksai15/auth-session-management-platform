@@ -127,3 +127,18 @@ func RefreshToken(refreshToken string) (string, error) {
 
 	return newAccessToken, nil
 }
+
+// LogoutUser deletes the user's refresh token from Redis.
+// After this call, the refresh token is gone — the user must login again to get a new one.
+// The access token will still work until it expires (15 min), but cannot be renewed.
+func LogoutUser(userId int) error {
+	redisKey := fmt.Sprintf("refresh_token:%d", userId)
+
+	// DEL removes the key from Redis
+	err := config.RedisClient.Del(context.Background(), redisKey).Err()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

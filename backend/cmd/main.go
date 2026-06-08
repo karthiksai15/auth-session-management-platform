@@ -42,6 +42,8 @@ func main() {
 		auth.POST("/register", handlers.Register)
 		auth.POST("/login", handlers.Login)
 		auth.POST("/refresh", handlers.Refresh)
+		// Logout requires a valid token — user must be logged in
+		auth.POST("/logout", middleware.AuthMiddleware(), handlers.Logout)
 	}
 
 	// User routes — protected (valid JWT required)

@@ -1,10 +1,14 @@
 package services
 
 import (
+	"auth-system/backend/config"
 	"auth-system/backend/models"
 	"auth-system/backend/repository"
 	"auth-system/backend/utils"
+	"context"
 	"errors"
+	"fmt"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -71,6 +75,15 @@ func LoginUser(email, password string) (string, string, error) {
 
 	// Step 4: Generate a long-lived refresh token (7 days)
 	refreshToken, err := utils.GenerateRefreshToken(user.ID)
+	if err != nil {
+		return "", "", err
+	}
+
+	// Step 5: Store the refresh token in Redis
+	// Key format: refresh_token:{userId}  e.g. refresh_token:1
+	// TTL: 7 days — same as the token expiry
+	redisKey := fmt.Sprintf("refresh_token:%d", user.ID)
+	err = config.RedisClient.Set(context.Background(), redisKey, refreshToken, 7*24*time.Hour).Err()
 	if err != nil {
 		return "", "", err
 	}

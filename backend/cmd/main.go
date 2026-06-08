@@ -22,6 +22,9 @@ func main() {
 	// Connect to PostgreSQL
 	config.ConnectDB()
 
+	// Connect to Redis
+	config.ConnectRedis()
+
 	// Create a new Gin router with default middleware (logger + recovery)
 	r := gin.Default()
 

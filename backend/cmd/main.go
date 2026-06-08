@@ -9,6 +9,7 @@ import (
 	"auth-system/backend/handlers"
 	"auth-system/backend/middleware"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -28,6 +29,9 @@ func main() {
 
 	// Create a new Gin router with default middleware (logger + recovery)
 	r := gin.Default()
+
+	// Enable CORS for frontend integration
+	r.Use(cors.Default())
 
 	// Health check endpoint — used to verify the server is running
 	r.GET("/health", func(c *gin.Context) {

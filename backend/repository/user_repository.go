@@ -94,3 +94,15 @@ func GetAllUsers() ([]models.User, error) {
 
 	return users, nil
 }
+
+// UpdateUser updates the user's name in the database.
+// Role and email cannot be updated through this function.
+func UpdateUser(id int, newName string) error {
+	query := `
+		UPDATE users
+		SET name = $1, updated_at = NOW()
+		WHERE id = $2
+	`
+	_, err := config.DB.Exec(query, newName, id)
+	return err
+}

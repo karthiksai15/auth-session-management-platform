@@ -47,26 +47,11 @@ func main() {
 	}
 
 	// User routes — protected (valid JWT required)
-	// Full handlers will be added in Phase 10
 	users := r.Group("/users")
 	users.Use(middleware.AuthMiddleware())
 	{
-		users.GET("/profile", func(c *gin.Context) {
-			// Temporary placeholder — replaced by handlers.GetProfile in Phase 10
-			userId, _ := c.Get("userId")
-			role, _ := c.Get("role")
-			c.JSON(http.StatusOK, gin.H{
-				"message": "Auth working — full profile coming in Phase 10",
-				"userId":  userId,
-				"role":    role,
-			})
-		})
-		users.PUT("/profile", func(c *gin.Context) {
-			// Temporary placeholder — replaced by handlers.UpdateProfile in Phase 10
-			c.JSON(http.StatusOK, gin.H{
-				"message": "Auth working — full update coming in Phase 10",
-			})
-		})
+		users.GET("/profile", handlers.GetProfile)
+		users.PUT("/profile", handlers.UpdateProfile)
 	}
 
 	// Admin routes — require valid JWT AND role must be ADMIN

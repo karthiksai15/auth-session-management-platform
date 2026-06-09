@@ -1,39 +1,34 @@
-# API Gateway, Authentication & Order Management Platform
+# Authentication & Session Management Platform
 
 ## Project Overview
 
-This project is a microservices-based platform developed using Spring Boot. It provides secure user authentication, centralized API routing, and order management functionality.
+This project is a secure authentication and session management platform developed using Go, Gin, PostgreSQL, Redis, Docker, and Nginx.
 
-The main goal of this project was to understand how real-world backend systems are structured using API Gateways, authentication services, databases, caching systems, and Dockerized deployment.
+The main goal of this project was to understand how modern backend applications handle authentication, authorization, session management, and secure API access using JWT tokens and Redis-backed sessions.
 
-The application consists of separate services for authentication and order management, which communicate through an API Gateway.
+The application supports user registration, login, refresh token management, role-based access control, and protected API access through a layered backend architecture.
 
 ## Features
 
 * User Registration and Login
 * JWT-Based Authentication
 * Refresh Token Management using Redis
-* Role-Based Access Control
-* API Gateway for Request Routing
-* Load Balancing for Authentication Service
-* Order Creation and Cancellation
+* Role-Based Access Control (RBAC)
+* Protected REST APIs
+* User Profile Management
+* Admin User Management APIs
 * PostgreSQL Database Integration
+* Session Invalidation on Logout
 * Dockerized Deployment
-* Swagger API Documentation
-* Unit Testing with JUnit and Mockito
+* Nginx Frontend Hosting
 
 ## Technologies Used
 
 ### Backend
 
-* Java 17
-* Spring Boot
-* Spring Security
-* Spring Data JPA
-* Spring Cloud Gateway
-
-### Database & Cache
-
+* Go
+* Gin
+* JWT
 * PostgreSQL
 * Redis
 
@@ -42,97 +37,110 @@ The application consists of separate services for authentication and order manag
 * HTML
 * CSS
 * JavaScript
+* Nginx
 
 ### Tools
 
 * Docker
 * Docker Compose
 * Postman
-* Swagger
+* Git
+* GitHub
 
 ## Architecture
 
 ```text
-                        Frontend
-                   (HTML, CSS, JS)
-                              |
-                              |
-                              v
-                    API Gateway Service
-                              |
-          --------------------------------------
-          |                                    |
-          |                                    |
-          v                                    v
+                     Frontend
+                (HTML, CSS, JS)
+                        |
+                        |
+                        v
 
- Authentication Service                Order Service
-   (JWT, Redis, Users)                (Orders Module)
+                  Gin Backend API
+                        |
+         --------------------------------
+         |              |              |
+         |              |              |
+         v              v              v
 
-          |                                    |
-          |                                    |
-          v                                    v
+      Routes       Middleware      Handlers
+                                        |
+                                        |
+                                        v
 
-      PostgreSQL                         PostgreSQL
-          |
-          |
-          v
+                                   Services
+                                        |
+                                        |
+                                        v
 
-        Redis
+                                  Repository
+                                        |
+                                        |
+                                        v
+
+                                  PostgreSQL
+
+                                        ^
+                                        |
+                                        |
+                                     Redis
+                           (Refresh Token Store)
 ```
 
 ## Authentication Flow
 
-1. User registers with name, email, and password.
-2. User logs in using email and password.
-3. Authentication Service verifies credentials.
-4. JWT Access Token and Refresh Token are generated.
-5. Refresh Token is stored in Redis.
-6. Access Token is used for protected API requests.
-7. API Gateway validates requests before forwarding them to backend services.
+1. User registers using name, email, and password.
+2. Password is hashed before being stored in PostgreSQL.
+3. User logs in using email and password.
+4. Credentials are validated by the authentication service.
+5. JWT Access Token and Refresh Token are generated.
+6. Refresh Token is stored in Redis.
+7. Access Token is used for accessing protected APIs.
+8. Middleware validates JWT tokens before allowing access.
+9. On logout, the Redis session is removed and future refresh requests are rejected.
 
-## Order Management Flow
+## Session Management Flow
 
-1. User logs into the system.
-2. User creates an order.
-3. Order details are stored in PostgreSQL.
-4. User can view their orders.
-5. User can cancel their own orders.
-6. Admin users can view all orders.
+1. User logs in successfully.
+2. Refresh token is stored in Redis.
+3. Access token expires after a short duration.
+4. Client requests a new access token using the refresh token.
+5. Redis validates the active session.
+6. A new access token is generated.
+7. Logout removes the stored refresh token from Redis.
 
-## Design Patterns Used
+## Role-Based Access Control
 
-### Factory Pattern
+### USER
 
-Used to return the appropriate authentication strategy.
+* View Profile
+* Update Profile
 
-### Strategy Pattern
+### ADMIN
 
-Used to implement authentication logic.
-
-### Observer Pattern
-
-Used to handle actions that occur after user registration.
-
-### Builder Pattern
-
-Used while creating API response objects.
+* View Profile
+* Update Profile
+* View All Users
 
 ## Project Structure
 
 ```text
-api-gateway-order-platform
+secure-auth-platform
 │
-├── api-gateway
-│
-├── auth-service
-│
-├── order-service
+├── backend
+│   ├── cmd
+│   ├── config
+│   ├── handlers
+│   ├── middleware
+│   ├── models
+│   ├── repository
+│   ├── routes
+│   ├── services
+│   └── utils
 │
 ├── frontend
 │
-├── postman
-│
-├── docs
+├── postgres
 │
 └── docker-compose.yml
 ```
@@ -141,78 +149,86 @@ api-gateway-order-platform
 
 ### Authentication
 
-POST /api/auth/register
+POST /auth/register
 
-POST /api/auth/login
+POST /auth/login
 
-POST /api/auth/refresh
+POST /auth/refresh
 
-POST /api/auth/logout
+POST /auth/logout
 
-### Orders
+### User
 
-POST /api/orders
+GET /users/profile
 
-GET /api/orders
-
-GET /api/orders/{id}
-
-DELETE /api/orders/{id}
+PUT /users/profile
 
 ### Admin
 
-GET /api/admin/orders
+GET /admin/users
 
 ## Running the Project
 
-Build the services:
+Start all services:
 
 ```bash
-mvn clean package
+docker-compose up --build
 ```
 
-Start all containers:
+Stop all services:
 
 ```bash
-docker compose up --build
+docker-compose down
 ```
 
-Stop all containers:
+Health Check:
 
 ```bash
-docker compose down
+curl http://localhost:8080/health
 ```
 
 ## Testing
 
-The project includes unit tests using:
+The application was tested using:
 
-* JUnit 5
-* Mockito
+* Postman
+* Docker Containers
+* PostgreSQL
+* Redis
 
-API testing was performed using Postman.
+The following workflows were verified:
+
+* User Registration
+* Login Authentication
+* Protected Route Access
+* Profile Update
+* Refresh Token Generation
+* Logout and Session Invalidation
+* Role-Based Access Control
+* Admin API Access
 
 ## Screenshots
 
-Add screenshots here after running the project:
+Add screenshots after testing:
 
-* Login Page
-* Registration Page
-* Orders Dashboard
-* Swagger Documentation
-* Docker Containers
-* Postman Responses
+* Login API Response
+* Profile API Response
+* Admin User API
+* Logout Session Invalidation
+* Frontend Login Page
+* Frontend Profile Page
+* Docker Containers Running
 
 ## Learning Outcomes
 
 Through this project I learned:
 
-* Microservice architecture fundamentals
-* API Gateway implementation
 * JWT authentication and authorization
-* Redis integration
+* Session management using Redis
+* Role-based access control
+* Layered backend architecture
+* PostgreSQL integration
 * Docker containerization
-* PostgreSQL database integration
-* Spring Security
-* Design patterns in real applications
-* Writing unit tests using JUnit and Mockito
+* REST API development using Gin
+* Secure password storage using bcrypt
+* Middleware implementation in Go

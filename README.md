@@ -1,72 +1,234 @@
-# Authentication, Authorization & Session Management System
+# Authentication & Session Management Platform
 
-A production-grade, full-stack authentication system built with Go, PostgreSQL, Redis, and vanilla HTML/JS/CSS. This project demonstrates secure user registration, login, role-based authorization, and robust session management using short-lived Access Tokens and long-lived Refresh Tokens.
+## Project Overview
 
-## 🚀 Features
+This project is a secure authentication and session management platform developed using Go, Gin, PostgreSQL, Redis, Docker, and Nginx.
 
-- **User Registration:** Secure password hashing using `bcrypt`.
-- **Login & Session Management:**
-  - Short-lived **JWT Access Tokens** (15 minutes).
-  - Long-lived **Refresh Tokens** (7 days) securely stored and managed in Redis.
-- **Role-Based Access Control (RBAC):** `USER` and `ADMIN` roles enforced via Gin middleware.
-- **Profile Management:** Users can view and update their profile details.
-- **Logout:** Invalidation of active sessions via Redis key deletion.
-- **Frontend Integration:** A clean, responsive UI built with pure HTML, CSS, and vanilla JS leveraging the `fetch` API.
-- **Dockerized:** Fully orchestrated with Docker Compose for seamless deployment.
+The main goal of this project was to understand how modern backend applications handle authentication, authorization, session management, and secure API access using JWT tokens and Redis-backed sessions.
 
-## 🛠 Tech Stack
+The application supports user registration, login, refresh token management, role-based access control, and protected API access through a layered backend architecture.
 
-- **Backend:** Go (Golang), Gin Framework
-- **Database:** PostgreSQL (raw SQL queries, no ORM)
-- **Caching/Sessions:** Redis
-- **Security:** `golang-jwt`, `bcrypt`
-- **Frontend:** Vanilla HTML, CSS, JavaScript
-- **Deployment:** Docker, Docker Compose, Nginx (Reverse Proxy)
+## Features
 
-## 📦 How to Run
+* User Registration and Login
+* JWT-Based Authentication
+* Refresh Token Management using Redis
+* Role-Based Access Control (RBAC)
+* Protected REST APIs
+* User Profile Management
+* Admin User Management APIs
+* PostgreSQL Database Integration
+* Session Invalidation on Logout
+* Dockerized Deployment
+* Nginx Frontend Hosting
 
-Ensure you have Docker and Docker Compose installed on your machine.
+## Technologies Used
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository_url>
-   cd auth-system
-   ```
+### Backend
 
-2. **Start the application:**
-   ```bash
-   docker-compose up -d --build
-   ```
+* Go
+* Gin
+* JWT
+* PostgreSQL
+* Redis
 
-3. **Access the Application:**
-   - **Frontend UI:** Open your browser and navigate to `http://localhost`
-   - **Backend API:** `http://localhost/api`
-   
-   *Note: On the first startup, a default Admin account is automatically seeded into the database.*
-   - **Admin Email:** `admin@example.com`
-   - **Admin Password:** `secret123`
+### Frontend
 
-4. **Stop the application:**
-   ```bash
-   docker-compose down
-   ```
+* HTML
+* CSS
+* JavaScript
+* Nginx
 
-## 🔌 API Endpoints
+### Tools
 
-| Method | Endpoint | Description | Auth Required | Role Required |
-|--------|----------|-------------|---------------|---------------|
-| `GET`  | `/api/health` | Health check | ❌ | None |
-| `POST` | `/api/auth/register` | Register a new user | ❌ | None |
-| `POST` | `/api/auth/login` | Login and receive tokens | ❌ | None |
-| `POST` | `/api/auth/refresh` | Issue new access token using refresh token | ❌ | None |
-| `POST` | `/api/auth/logout` | Logout (invalidates refresh token in Redis) | ✅ | None |
-| `GET`  | `/api/users/profile` | Get logged-in user's profile | ✅ | None |
-| `PUT`  | `/api/users/profile` | Update user's name | ✅ | None |
-| `GET`  | `/api/admin/users` | Retrieve all users | ✅ | `ADMIN` |
+* Docker
+* Docker Compose
+* Postman
+* Git
+* GitHub
 
-## 🏗 Architecture
+## Architecture
 
-1. **Nginx (Frontend container):** Serves static assets on port 80 and proxies any requests starting with `/api/` to the backend service.
-2. **Go Backend:** Listens internally on port 8080.
-3. **PostgreSQL:** Persists user data, securely storing hashed passwords and role definitions.
-4. **Redis:** Manages stateful refresh tokens with a 7-day TTL. When a user logs out, their key is deleted from Redis, invalidating their session instantly.
+```text
+                     Frontend
+                (HTML, CSS, JS)
+                        |
+                        |
+                        v
+
+                  Gin Backend API
+                        |
+         --------------------------------
+         |              |              |
+         |              |              |
+         v              v              v
+
+      Routes       Middleware      Handlers
+                                        |
+                                        |
+                                        v
+
+                                   Services
+                                        |
+                                        |
+                                        v
+
+                                  Repository
+                                        |
+                                        |
+                                        v
+
+                                  PostgreSQL
+
+                                        ^
+                                        |
+                                        |
+                                     Redis
+                           (Refresh Token Store)
+```
+
+## Authentication Flow
+
+1. User registers using name, email, and password.
+2. Password is hashed before being stored in PostgreSQL.
+3. User logs in using email and password.
+4. Credentials are validated by the authentication service.
+5. JWT Access Token and Refresh Token are generated.
+6. Refresh Token is stored in Redis.
+7. Access Token is used for accessing protected APIs.
+8. Middleware validates JWT tokens before allowing access.
+9. On logout, the Redis session is removed and future refresh requests are rejected.
+
+## Session Management Flow
+
+1. User logs in successfully.
+2. Refresh token is stored in Redis.
+3. Access token expires after a short duration.
+4. Client requests a new access token using the refresh token.
+5. Redis validates the active session.
+6. A new access token is generated.
+7. Logout removes the stored refresh token from Redis.
+
+## Role-Based Access Control
+
+### USER
+
+* View Profile
+* Update Profile
+
+### ADMIN
+
+* View Profile
+* Update Profile
+* View All Users
+
+## Project Structure
+
+```text
+secure-auth-platform
+│
+├── backend
+│   ├── cmd
+│   ├── config
+│   ├── handlers
+│   ├── middleware
+│   ├── models
+│   ├── repository
+│   ├── routes
+│   ├── services
+│   └── utils
+│
+├── frontend
+│
+├── postgres
+│
+└── docker-compose.yml
+```
+
+## API Endpoints
+
+### Authentication
+
+POST /auth/register
+
+POST /auth/login
+
+POST /auth/refresh
+
+POST /auth/logout
+
+### User
+
+GET /users/profile
+
+PUT /users/profile
+
+### Admin
+
+GET /admin/users
+
+## Running the Project
+
+Start all services:
+
+```bash
+docker-compose up --build
+```
+
+Stop all services:
+
+```bash
+docker-compose down
+```
+
+Health Check:
+
+```bash
+curl http://localhost:8080/health
+```
+
+## Testing
+
+The application was tested using:
+
+* Postman
+* Docker Containers
+* PostgreSQL
+* Redis
+
+The following workflows were verified:
+
+* User Registration
+* Login Authentication
+* Protected Route Access
+* Profile Update
+* Refresh Token Generation
+* Logout and Session Invalidation
+* Role-Based Access Control
+* Admin API Access
+
+## Screenshots
+
+Add screenshots after testing:
+
+* Login API Response
+* Profile API Response
+* Admin User API
+* Logout Session Invalidation
+* Frontend Login Page
+* Frontend Profile Page
+* Docker Containers Running
+
+## Learning Outcomes
+
+Through this project I learned:
+
+* JWT authentication and authorization
+* Session management using Redis
+* Role-based access control
+* Layered backend architecture
+* PostgreSQL integration
+* Docker containerization
+* REST API development using Gin
+* Secure password storage using bcrypt
+* Middleware implementation in Go

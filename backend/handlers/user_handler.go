@@ -1,22 +1,20 @@
 package handlers
 
 import (
-	"auth-system/backend/repository"
+	"auth-system/backend/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-// GetProfile handles GET /users/profile
-// Requires valid JWT token via AuthMiddleware.
 func GetProfile(c *gin.Context) {
 	userId, exists := c.Get("userId")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found in context"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
 		return
 	}
 
-	user, err := repository.FindUserByID(userId.(int))
+	user, err := services.GetProfile(userId.(int))
 	if err != nil || user == nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
@@ -25,31 +23,31 @@ func GetProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"user": user})
 }
 
-// UpdateProfileRequest defines the allowed fields for profile update
 type UpdateProfileRequest struct {
 	Name string `json:"name" binding:"required"`
 }
 
-// UpdateProfile handles PUT /users/profile
-// Only allows updating the name.
 func UpdateProfile(c *gin.Context) {
 	userId, exists := c.Get("userId")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found in context"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
 		return
 	}
 
 	var req UpdateProfileRequest
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	err := repository.UpdateUser(userId.(int), req.Name)
+	err := services.UpdateProfile(userId.(int), req.Name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update profile"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Profile updated successfully"})
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Profile updated successfully",
+	})
 }

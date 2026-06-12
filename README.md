@@ -279,6 +279,3 @@ Add screenshots after testing:
 * Password Reset Workflow
 * CI/CD Pipeline Integration
 
-## License
-
-This project was developed for learning and portfolio purposes.

@@ -1,36 +1,33 @@
 # Authentication & Session Management Platform
 
-## Project Overview
+## Overview
 
-This project is a secure authentication and session management platform developed using Go, Gin, PostgreSQL, Redis, Docker, and Nginx.
+Authentication and Session Management Platform built using Go, Gin, PostgreSQL, Redis, Docker, and Nginx.
 
-The main goal of this project was to understand how modern backend applications handle authentication, authorization, session management, and secure API access using JWT tokens and Redis-backed sessions.
-
-The application supports user registration, login, refresh token management, role-based access control, and protected API access through a layered backend architecture.
+The application provides secure user authentication, JWT-based authorization, Redis-backed session management, role-based access control, and protected REST APIs. It follows a layered architecture that separates routing, business logic, data access, and authentication concerns.
 
 ## Features
 
 * User Registration and Login
-* JWT-Based Authentication
-* Refresh Token Management using Redis
+* JWT Access and Refresh Tokens
+* Redis-Based Session Management
 * Role-Based Access Control (RBAC)
-* Protected REST APIs
+* Protected API Endpoints
 * User Profile Management
 * Admin User Management APIs
-* PostgreSQL Database Integration
+* PostgreSQL Persistence
 * Session Invalidation on Logout
 * Dockerized Deployment
-* Nginx Frontend Hosting
 
-## Technologies Used
+## Technology Stack
 
 ### Backend
 
 * Go
 * Gin
-* JWT
 * PostgreSQL
 * Redis
+* JWT
 
 ### Frontend
 
@@ -47,85 +44,151 @@ The application supports user registration, login, refresh token management, rol
 * Git
 * GitHub
 
-## Architecture
+## System Architecture
 
 ```text
-                     Frontend
-                (HTML, CSS, JS)
-                        |
-                        |
-                        v
++----------------------+
+|      Frontend        |
+|   HTML, CSS, JS      |
++----------+-----------+
+           |
+           v
++----------------------+
+|      Nginx Server    |
++----------+-----------+
+           |
+           v
++----------------------+
+|      Gin Backend     |
++----------+-----------+
+           |
+           v
++----------------------+
+|      Middleware      |
+| JWT & Role Validation|
++----------+-----------+
+           |
+           v
++----------------------+
+|       Handlers       |
++----------+-----------+
+           |
+           v
++----------------------+
+|       Services       |
+|   Business Logic     |
++----------+-----------+
+           |
+           v
++----------------------+
+|      Repository      |
+|   Database Access    |
++----------+-----------+
+           |
+           v
++----------------------+
+|      PostgreSQL      |
+|      User Data       |
++----------------------+
 
-                  Gin Backend API
-                        |
-         --------------------------------
-         |              |              |
-         |              |              |
-         v              v              v
-
-      Routes       Middleware      Handlers
-                                        |
-                                        |
-                                        v
-
-                                   Services
-                                        |
-                                        |
-                                        v
-
-                                  Repository
-                                        |
-                                        |
-                                        v
-
-                                  PostgreSQL
-
-                                        ^
-                                        |
-                                        |
-                                     Redis
-                           (Refresh Token Store)
+           ^
+           |
+           |
++----------------------+
+|        Redis         |
+| Refresh Token Store  |
++----------------------+
 ```
 
-## Authentication Flow
+## Authentication & Authorization Workflow
 
-1. User registers using name, email, and password.
-2. Password is hashed before being stored in PostgreSQL.
-3. User logs in using email and password.
-4. Credentials are validated by the authentication service.
-5. JWT Access Token and Refresh Token are generated.
-6. Refresh Token is stored in Redis.
-7. Access Token is used for accessing protected APIs.
-8. Middleware validates JWT tokens before allowing access.
-9. On logout, the Redis session is removed and future refresh requests are rejected.
+```text
++----------------------+
+|      User Login      |
++----------+-----------+
+           |
+           v
++----------------------+
+| Validate Credentials |
++----------+-----------+
+           |
+           v
++----------------------+
+| Generate JWT Tokens  |
++----------+-----------+
+           |
+           v
++----------------------+
+| Store Refresh Token  |
+|      in Redis        |
++----------+-----------+
+           |
+           v
++----------------------+
+| Return Tokens        |
+|      to Client       |
++----------+-----------+
+           |
+           v
++----------------------+
+| Protected API Call   |
++----------+-----------+
+           |
+           v
++----------------------+
+| Validate JWT Token   |
++----------+-----------+
+           |
+           v
++----------------------+
+| Check User Role      |
++----------+-----------+
+           |
+     +-----+-----+
+     |           |
+     v           v
 
-## Session Management Flow
-
-1. User logs in successfully.
-2. Refresh token is stored in Redis.
-3. Access token expires after a short duration.
-4. Client requests a new access token using the refresh token.
-5. Redis validates the active session.
-6. A new access token is generated.
-7. Logout removes the stored refresh token from Redis.
++-----------+ +-----------+
+| Authorized| | Rejected  |
+|  Request  | |  Request  |
++-----------+ +-----------+
+```
 
 ## Role-Based Access Control
 
-### USER
+| Role  | Permissions                                  |
+| ----- | -------------------------------------------- |
+| USER  | View Profile, Update Profile                 |
+| ADMIN | View Profile, Update Profile, View All Users |
 
-* View Profile
-* Update Profile
+## API Endpoints
 
-### ADMIN
+### Authentication
 
-* View Profile
-* Update Profile
-* View All Users
+```text
+POST /auth/register
+POST /auth/login
+POST /auth/refresh
+POST /auth/logout
+```
+
+### User
+
+```text
+GET /users/profile
+PUT /users/profile
+```
+
+### Admin
+
+```text
+GET /admin/users
+```
 
 ## Project Structure
 
 ```text
-secure-auth-platform
+auth-session-management-platform
 │
 ├── backend
 │   ├── cmd
@@ -142,37 +205,17 @@ secure-auth-platform
 │
 ├── postgres
 │
-└── docker-compose.yml
+├── docker-compose.yml
+│
+└── README.md
 ```
 
-## API Endpoints
-
-### Authentication
-
-POST /auth/register
-
-POST /auth/login
-
-POST /auth/refresh
-
-POST /auth/logout
-
-### User
-
-GET /users/profile
-
-PUT /users/profile
-
-### Admin
-
-GET /admin/users
-
-## Running the Project
+## Running the Application
 
 Start all services:
 
 ```bash
-docker-compose up --build
+docker-compose up -d
 ```
 
 Stop all services:
@@ -181,54 +224,61 @@ Stop all services:
 docker-compose down
 ```
 
-Health Check:
+View running containers:
+
+```bash
+docker ps
+```
+
+Verify backend health:
 
 ```bash
 curl http://localhost:8080/health
 ```
 
+Build backend locally:
+
+```bash
+cd backend
+go build ./...
+```
+
 ## Testing
 
-The application was tested using:
-
-* Postman
-* Docker Containers
-* PostgreSQL
-* Redis
-
-The following workflows were verified:
+The following workflows were verified using Postman and Docker:
 
 * User Registration
-* Login Authentication
+* User Login
+* JWT Authentication
 * Protected Route Access
+* Profile Retrieval
 * Profile Update
 * Refresh Token Generation
 * Logout and Session Invalidation
 * Role-Based Access Control
-* Admin API Access
+* Admin User Access
 
 ## Screenshots
 
 Add screenshots after testing:
 
 * Login API Response
-* Profile API Response
-* Admin User API
-* Logout Session Invalidation
-* Frontend Login Page
-* Frontend Profile Page
+* User Profile API Response
+* Admin Users API Response
+* Session Invalidation After Logout
+* Login Page
+* Profile Page
 * Docker Containers Running
 
-## Learning Outcomes
+## Future Improvements
 
-Through this project I learned:
+* Swagger API Documentation
+* Unit and Integration Testing
+* Rate Limiting
+* Email Verification
+* Password Reset Workflow
+* CI/CD Pipeline Integration
 
-* JWT authentication and authorization
-* Session management using Redis
-* Role-based access control
-* Layered backend architecture
-* PostgreSQL integration
-* Docker containerization
-* REST API development using Gin
-* Secure password storage using bcrypt
-* Middleware implementation in Go
+## License
+
+This project was developed for learning and portfolio purposes.

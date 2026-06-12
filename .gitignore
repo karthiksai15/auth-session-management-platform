@@ -1,14 +1,11 @@
-# Go binaries
-*.exe
-*.out
-/backend/bin/
-
-# Environment files
 .env
 .env.local
 
-# Go module cache
-vendor/
+.idea/
+.vscode/
 
-# OS files
 .DS_Store
+
+backend/main
+
+*.log
